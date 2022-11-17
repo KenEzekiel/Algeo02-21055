@@ -5,7 +5,7 @@ import os
 count = 0
 data = []
 sum = [0 for i in range(256 * 256)]
-path = '..//test//contoh'
+path = '..//test//contoh(sedikit)'
 for foldername in os.listdir(path):
     print(f'Processing {foldername}')
     path2 = os.path.join(path, foldername)
@@ -23,17 +23,15 @@ mean = numpy.divide(sum, count)
 for d in data:
     d = numpy.subtract(d, mean)
 
-# ini kenapa jadi M x N^2? pas di add, di add ke row ya?
-# data M x N^2
+# A = N^2 x M
 # A = [a1, a2, .., am], A = data
-npdata = numpy.matrix(data)
-print(npdata.shape)
-# A : N^2 x M
-npdata = npdata.transpose()
+A = numpy.transpose(data)
+
+AT = A.transpose()
 print('1')
-# A : N^2 x M, At : M x N^2
-# M x M : At x A
-Cov = numpy.matmul(npdata.transpose(), npdata)
+# A : N^2 x M, AT : M x N^2
+# M x M : AT x A
+Cov = numpy.matmul(AT, A)
 print('2')
 
 w, v = numpy.linalg.eig(Cov)
@@ -74,8 +72,8 @@ for i in range(k):
     vi = eigvecs[i].transpose()
     print(vi)
     print(vi.size)
-    print(npdata.size)
-    ui = numpy.matmul(npdata, vi)
+    print(A.size)
+    ui = numpy.matmul(A, vi)
     u = numpy.concatenate((u, ui), axis = 1)
 
 print("u:", u)
