@@ -1,7 +1,5 @@
 import time
 import numpy as np
-import sys
-import sympy as sym
 
 
 '''
@@ -124,4 +122,4 @@ def eigenvectors_qr(A: np.matrix, iters=50):
         Q, R = qr(Ak)
         Ak = R @ Q
         QQ = QQ @ Q
-    return Ak, QQ
+    return np.array(np.diag(Ak)), QQ

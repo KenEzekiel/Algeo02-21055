@@ -5,6 +5,7 @@ import cv2
 import numpy
 import os
 import time
+import eigen
 
 window = Tk()
 
@@ -155,6 +156,8 @@ def start():
         sum = numpy.add(sum, img)
         count += 1
 
+    rawimg = data
+    # print(f'shape rawimg {rawimg[0].shape}')
     print(f'File count: {count}')
     mean = numpy.divide(sum, count)
 
@@ -176,7 +179,7 @@ def start():
     Cov = numpy.matmul(npdata.transpose(), npdata)
     # print('2')
 
-    w, v = numpy.linalg.eig(Cov)
+    w, v = eigen.eigenvectors_qr(Cov)
     # print("w")
     # print(w)
     # print("v")
@@ -290,14 +293,27 @@ def start():
     indexmin = 0
     for i in range(1, count):
         temp = numpy.linalg.norm(wtest - wdata[i])
+        print(temp)
         if (temp < distance):
             distance = temp
-            indexmin = i - 1
+            indexmin = i
     # distance adalah jarak euclidean terkecil
     # indexmin adalah index dengan w di wdata terdekat dengan wtest
     print(distance)
     print(indexmin)
     print(f'file count: {count}')
+
+    # rawimg : N^2 x M, ditranspose jadi M x N^2
+    # image closest : 1 x N^2
+    rawimage = numpy.transpose(rawimg)
+    imageclosest = rawimg[indexmin]
+    # ditranspose jadi N^2 x 1
+    imageclosest = imageclosest.T
+
+    # contoh hasil
+    testRes = imageclosest.reshape(-1, 256).T
+    # print(testmeanface)
+    cv2.imwrite(r"..\test\hasil\test1.jpg", testRes)
 
     print("donedone")
 
