@@ -24,7 +24,7 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
 count = 0
 data = []
 sum = [0 for i in range(256 * 256)]
-path = '..//test//contoh(sedikit)'
+path = '..//test//contoh'
 for foldername in os.listdir(path):
     print(f'Processing {foldername}')
     path2 = os.path.join(path, foldername)
@@ -45,6 +45,7 @@ for d in data:
 # A = N^2 x M
 # A = [a1, a2, .., am], A = data
 npdata = numpy.array(data)
+# karena masih M x N^2
 print(npdata.shape)
 # A : N^2 x M
 npdata = npdata.transpose()
@@ -89,7 +90,8 @@ print("eigvecs (still transposed):", eigvecs)
 # ui = A.vi
 u = numpy.empty((0, 256*256), dtype=type(v))
 for i in range(k):
-    # ambil row vi, terus transpose, terus dikali A, hasilnya langsung ui yang N^2 x 1 (A: N^2 x M, vi : M x 1)
+    # ambil row vi, terus transpose, terus dikali A, hasilnya ui yang N^2 x 1 (A: N^2 x M, vi : M x 1)
+    # ditranspose biar gampang masukinnya
     vi = eigvecs[i].transpose()
     print("vi: ")
     print(vi)
@@ -104,8 +106,33 @@ for i in range(k):
     # u = numpy.concatenate((u, ui), axis = 0)
 
 print("u:", u)
-u = u.transpose()
+# u = u.transpose()
+AT = npdata.transpose()
 
+
+w = numpy.empty((0, k), dtype = type(u))
+# ui dimensinya 1 x N^2 karena ditranspose
+# AT dimensinya M x N^2, diambil row nya jadi 1 x N^2
+# Kaliin semua row (gambar) dengan semua row (ui) matriks u
+# 1 gambar dikali k u, hasilnya ada k weight, vektor wi dimensinya 1 x k
+# ada sebanyak count gambar, matriks w jadinya count x k, nanti ditranspose jadi k x count
+for i in range(count):
+    wi = numpy.empty(0, dtype = type(u)) 
+    Ai = AT[i]
+    for j in range(k):
+        uj = u[j]
+        temp = numpy.dot(Ai, uj)
+        wi = numpy.append(wi, temp)
+        # print(wi.size)
+        # print(wi)
+    w = numpy.vstack((w, wi))
+
+print("w:", w)
+# count x k
+print(w.size)
+w = numpy.transpose(w)
+# k x count
+print(w.size)
 
 
 
