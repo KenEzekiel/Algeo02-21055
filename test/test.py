@@ -24,7 +24,7 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
 count = 0
 data = []
 sum = [0 for i in range(256 * 256)]
-path = '..//test//contoh'
+path = '..//test//contoh(sedikit)'
 for foldername in os.listdir(path):
     print(f'Processing {foldername}')
     path2 = os.path.join(path, foldername)
@@ -42,8 +42,7 @@ mean = numpy.divide(sum, count)
 for d in data:
     d = numpy.subtract(d, mean)
 
-# ini kenapa jadi M x N^2? pas di add, di add ke row ya?
-# data M x N^2
+# A = N^2 x M
 # A = [a1, a2, .., am], A = data
 npdata = numpy.array(data)
 print(npdata.shape)
