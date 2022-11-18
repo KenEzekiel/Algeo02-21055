@@ -36,6 +36,7 @@ for foldername in os.listdir(path):
         sum = numpy.add(sum, img)
         count += 1
 
+rawimg = data
 print(f'File count: {count}')
 mean = numpy.divide(sum, count)
 
@@ -45,10 +46,12 @@ for d in data:
 # A = N^2 x M
 # A = [a1, a2, .., am], A = data
 npdata = numpy.array(data)
+rawimg = numpy.array(rawimg)
 # karena masih M x N^2
 print(npdata.shape)
 # A : N^2 x M
 npdata = npdata.transpose()
+rawimg = rawimg.transpose()
 # print('1')
 # A : N^2 x M, At : M x N^2
 # M x M : At x A
