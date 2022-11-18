@@ -47,3 +47,5 @@ for i in range(1, test.count):
 # indexmin adalah index dengan w di wdata terdekat dengan wtest
 print(distance)
 print(indexmin)
+
+imageclosest = test.npdata.transpose()[indexmin]
