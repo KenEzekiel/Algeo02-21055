@@ -1,5 +1,8 @@
+import time
 import numpy as np
 import sys
+import sympy as sym
+
 
 '''
 # Reading order of matrix
@@ -63,11 +66,62 @@ while condition:
     lambda_old = lambda_new
     condition = error > tolerable_error
 '''
-a = np.array([[0.5, 0.5, 1.2], [0, 0.8, 1.5], [0, 0, 0.3]])
-p = [1, 5, 10, 20]
-for i in range(20):
-    q, r = np.linalg.qr(a)
-    a = np.dot(r, q)
-    if i+1 in p:
-        print(f'Iteration {i+1}:')
-        print(a)
+
+
+def qr(A: np.matrix):
+    """ QR decomposition dari matriks A menggunakan householder reflection """
+    # https://en.wikipedia.org/wiki/QR_decomposition#Using_Householder_reflections
+    m, n = A.shape
+
+    # Q0 = I ukuran mxm
+    Q = np.eye(m)
+
+    # R0 = A
+    R = A.copy()
+
+    # jumlah iterasi
+    # setelah iterasi, R = Qt..Q2Q1A, Q = Q1..Qt
+    t = min(m, n)
+
+    for k in range(t - 1):
+        # x adalah minor dari A pada iterasi ke k di-transpose
+        x = R[k:, [k]]
+
+        # e1 = [1 0 ... 0]T
+        e1 = np.zeros_like(x)
+        e1[0] = 1.0
+
+        # alpha = kebalikan sign x[0] * ||x||
+        alpha = -np.sign(x[0]) * np.linalg.norm(x)
+
+        # u = x - alpha * e1
+        u = (x - alpha * e1)
+
+        # v = u / ||u||
+        v = u / np.linalg.norm(u)
+
+        # Q_k = householder matrix = I - 2vvT
+        Qk = np.eye(m - k) - 2.0 * v @ v.T
+
+        # karena x adalah matriks minor, berikan padding 1 pada diagonal dan 0 pada sisanya sehingga Q_k ukurannya m x m
+        Qk = np.block([[np.eye(k), np.zeros((k, m - k))],
+                       [np.zeros((m - k, k)), Qk]])
+
+        # persiapan untuk iterasi selanjutnya
+        Q = Q @ Qk.T
+        R = Qk @ R
+
+    return Q, R
+
+
+def eigenvectors_qr(A: np.matrix, iters=50):
+    """ Menghitung eigenvektor dari matriks A dengan metode QR eksplisit """
+
+    Ak = np.copy(A)
+    n = A.shape[0]
+    QQ = np.eye(n)
+    for _ in range(iters):
+        Q, R = qr(Ak)
+        Ak = R @ Q
+        QQ = QQ @ Q
+    return Ak, QQ
