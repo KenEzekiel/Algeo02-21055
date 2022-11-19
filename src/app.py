@@ -6,138 +6,158 @@ import numpy
 import os
 import time
 import eigen
+import threading
 
 window = Tk()
 
+processing = False
+
 window.geometry("1080x600")
-window.configure(bg = "#ffffff")
+window.configure(bg="#ffffff")
 canvas = Canvas(
     window,
-    bg = "#ffffff",
-    height = 600,
-    width = 1080,
-    bd = 0,
-    highlightthickness = 0,
-    relief = "ridge")
-canvas.place(x = 0, y = 0)
+    bg="#ffffff",
+    height=600,
+    width=1080,
+    bd=0,
+    highlightthickness=0,
+    relief="ridge")
+canvas.place(x=0, y=0)
 
-background_img = PhotoImage(file = f"background/background.png")
+background_img = PhotoImage(file=f"background/background.png")
 background = canvas.create_image(
     540.0, 300.0,
     image=background_img)
 
-img0 = PhotoImage(file = f"buttons/img0.png")
+img0 = PhotoImage(file=f"buttons/img0.png")
 b0 = Button(
-    image = img0,
-    borderwidth = 0,
-    highlightthickness = 0,
-    command = lambda: select_dataset(),
-    relief = "flat")
+    image=img0,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: select_dataset(),
+    relief="flat")
 
 b0.place(
-    x = 75, y = 219,
-    width = 160,
-    height = 50)
+    x=75, y=219,
+    width=160,
+    height=50)
 
-img1 = PhotoImage(file = f"buttons/img1.png")
+img1 = PhotoImage(file=f"buttons/img1.png")
 b1 = Button(
-    image = img1,
-    borderwidth = 0,
-    highlightthickness = 0,
-    command = lambda: select_image(),
-    relief = "flat")
+    image=img1,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: select_image(),
+    relief="flat")
 
 b1.place(
-    x = 75, y = 352,
-    width = 160,
-    height = 50)
+    x=75, y=352,
+    width=160,
+    height=50)
 
-img2 = PhotoImage(file = f"buttons/img2.png")
+img2 = PhotoImage(file=f"buttons/img2.png")
 b2 = Button(
-    image = img2,
-    borderwidth = 0,
-    highlightthickness = 0,
-    command = lambda: start(),
-    relief = "flat")
+    image=img2,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: start_thread(),
+    relief="flat")
 
 b2.place(
-    x = 75, y = 463,
-    width = 160,
-    height = 50)
+    x=75, y=463,
+    width=160,
+    height=50)
 
-entry0_img = PhotoImage(file = f"textbox/img_textBox0.png")
+entry0_img = PhotoImage(file=f"textbox/img_textBox0.png")
 entry0_bg = canvas.create_image(
     584.0, 496.5,
-    image = entry0_img)
+    image=entry0_img)
 
-entry0 = Entry(
-    bd = 0,
-    bg = "#d2c6ff",
-    highlightthickness = 0,
-    font = ('Poppins', 10))
+entry0 = Label(
+    bd=0,
+    bg="#d2c6ff",
+    highlightthickness=0,
+    font=('Poppins', 10))
 
 entry0.bind('<Button-1>', lambda e: 'break')
 
 entry0.place(
-    x = 545.5, y = 479,
-    width = 77.0,
-    height = 33)
+    x=545.5, y=479,
+    width=77.0,
+    height=33)
 
-entry1_img = PhotoImage(file = f"textbox/img_textBox1.png")
+entry1_img = PhotoImage(file=f"textbox/img_textBox1.png")
 entry1_bg = canvas.create_image(
     155.0, 293.0,
-    image = entry1_img)
+    image=entry1_img)
 
 entry1 = Entry(
-    bd = 0,
-    bg = "#86a1ff",
-    highlightthickness = 0,
-    font = ('Poppins', 10))
+    bd=0,
+    bg="#86a1ff",
+    highlightthickness=0,
+    font=('Poppins', 10))
 
 entry1.bind('<Button-1>', lambda e: 'break')
 
 entry1.place(
-    x = 90.0, y = 278,
-    width = 130.0,
-    height = 24)
+    x=90.0, y=278,
+    width=130.0,
+    height=24)
 
-entry2_img = PhotoImage(file = f"textbox/img_textBox2.png")
+entry2_img = PhotoImage(file=f"textbox/img_textBox2.png")
 entry2_bg = canvas.create_image(
     155.0, 427.0,
-    image = entry2_img)
+    image=entry2_img)
 
 entry2 = Entry(
-    bd = 0,
-    bg = "#86a1ff",
-    highlightthickness = 0,
-    font = ('Poppins', 10))
+    bd=0,
+    bg="#86a1ff",
+    highlightthickness=0,
+    font=('Poppins', 10))
 
 entry2.bind('<Button-1>', lambda e: 'break')
 
 entry2.place(
-    x = 90.0, y = 412,
-    width = 130.0,
-    height = 24)
+    x=90.0, y=412,
+    width=130.0,
+    height=24)
 
-entry3_img = PhotoImage(file = f"textbox/img_textBox3.png")
+entry3_img = PhotoImage(file=f"textbox/img_textBox3.png")
 entry3_bg = canvas.create_image(
     873.5, 495.5,
-    image = entry3_img)
+    image=entry3_img)
 
 entry3 = Entry(
-    bd = 0,
-    bg = "#d2c6ff",
-    highlightthickness = 0,
-    font = ('Poppins', 10))
+    bd=0,
+    bg="#d2c6ff",
+    highlightthickness=0,
+    font=('Poppins', 10))
 
 entry3.bind('<Button-1>', lambda e: 'break')
 
 entry3.place(
-    x = 799.5, y = 478,
-    width = 148.0,
-    height = 33)
+    x=799.5, y=478,
+    width=148.0,
+    height=33)
 
 canvas.pack()
+
+
+def counting():
+    start = time.time()
+    while processing:
+        time.sleep(0.5)
+        entry0.config(text=f"{(time.time() - start):.4f}s")
+
+
+def start_thread():
+    global processing
+    if processing:
+        return
+    processing = True
+    threading.Thread(target=start).start()
+    threading.Thread(target=counting).start()
+
 
 def start():
     sum = [0 for i in range(256 * 256)]
@@ -146,10 +166,10 @@ def start():
     data = []
 
     start_time = time.time()
-
     for imgname in os.listdir(pathdataset):
-        print(f'Processing {imgname}')
-        img = cv2.imread(os.path.join(pathdataset, imgname), cv2.IMREAD_GRAYSCALE)
+        # print(f'Processing {imgname}')
+        img = cv2.imread(os.path.join(pathdataset, imgname),
+                         cv2.IMREAD_GRAYSCALE)
         img = resize_256(img)
         img = numpy.array(img.T).flatten()
         data += [img]
@@ -233,15 +253,14 @@ def start():
     # u = u.transpose()
     AT = npdata.transpose()
 
-
-    w = numpy.empty((0, k), dtype = type(u))
+    w = numpy.empty((0, k), dtype=type(u))
     # ui dimensinya 1 x N^2 karena ditranspose
     # AT dimensinya M x N^2, diambil row nya jadi 1 x N^2
     # Kaliin semua row (gambar) dengan semua row (ui) matriks u
     # 1 gambar dikali k u, hasilnya ada k weight, vektor wi dimensinya 1 x k
     # ada sebanyak count gambar, matriks w jadinya count x k, nanti ditranspose jadi k x count
     for i in range(count):
-        wi = numpy.empty(0, dtype = type(u)) 
+        wi = numpy.empty(0, dtype=type(u))
         Ai = AT[i]
         for j in range(k):
             uj = u[j]
@@ -263,6 +282,7 @@ def start():
     # penyocokan image
     # test.w : k x count (data set file)
     wdata = numpy.transpose(w)
+
     # wdata : count x k
 
     # u local : k x N^2
@@ -277,7 +297,7 @@ def start():
     # 1 gambar dikali k u, hasilnya ada k weight, vektor wi dimensinya 1 x k
     # ada sebanyak count gambar, matriks w jadinya count x k, nanti ditranspose jadi k x count
 
-    wtest = numpy.empty(0, dtype = type(ulocal)) 
+    wtest = numpy.empty(0, dtype=type(ulocal))
     for j in range(k):
         uj = ulocal[j]
         temp = numpy.dot(image, uj)
@@ -293,7 +313,6 @@ def start():
     indexmin = 0
     for i in range(1, count):
         temp = numpy.linalg.norm(wtest - wdata[i])
-        print(temp)
         if (temp < distance):
             distance = temp
             indexmin = i
@@ -316,13 +335,14 @@ def start():
     cv2.imwrite(r"..\test\hasil\test1.jpg", testRes)
 
     print("donedone")
+    global processing
+    processing = False
 
     current_time = time.time()
     execution_time = '{:.4f}'.format(current_time - start_time)
 
-    current = entry0.get()
-    entry0.delete(0, END)
-    entry0.insert(0, execution_time + "s")
+    entry0.config(text=execution_time + "s")
+
 
 def getKeigen(k, eigvalues, eigvectors, filecount):
     # eigvalues and eigvectors are numpy arrays
@@ -339,17 +359,18 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
         eigvalues[index] = 0
         vec = vt[index]
         print("vec:", vec)
-        eigvecs = numpy.concatenate((eigvecs, vec), axis = 0)
-    
+        eigvecs = numpy.concatenate((eigvecs, vec), axis=0)
+
     return eigvals, eigvecs
+
 
 def select_dataset():
     global pathdataset
     pathdataset = filedialog.askdirectory()
 
-    current = entry1.get()
     entry1.delete(0, END)
     entry1.insert(0, os.path.basename(pathdataset))
+
 
 def resize_256(image):
     width, height = image.shape[1], image.shape[0]
@@ -372,11 +393,12 @@ def resize_256(image):
 
     dim = (256, 256)
 
-    resized_image = cv2.resize(crop_img, dim, interpolation = cv2.INTER_LINEAR)
+    resized_image = cv2.resize(crop_img, dim, interpolation=cv2.INTER_LINEAR)
 
     # print(f'res {resized_image.shape}')
 
     return resized_image
+
 
 def select_image():
     global image, imageInput
@@ -392,7 +414,7 @@ def select_image():
         grayscale = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
         resized_image = resize_256(image)
-        resized_grayscale = resize_256(grayscale) 
+        resized_grayscale = resize_256(grayscale)
 
         # print(f'resized {resized_grayscale.shape}')
         imageInput = numpy.array(resized_grayscale.T).flatten()
@@ -406,7 +428,7 @@ def select_image():
 
         image = ImageTk.PhotoImage(image)
         # grayscale = ImageTk.PhotoImage(grayscale)
-        
+
         canvas.create_image(
             382, 188,
             anchor=NW,
@@ -416,6 +438,7 @@ def select_image():
         #     707, 188,
         #     anchor=NW,
         #     image=grayscale)
+
 
 window.resizable(False, False)
 window.mainloop()
