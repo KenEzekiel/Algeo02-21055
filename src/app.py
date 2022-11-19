@@ -1,3 +1,4 @@
+# ---- Import Libraries ---- #
 from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import filedialog
@@ -6,10 +7,16 @@ import numpy
 import os
 import time
 import eigen
+from operator import itemgetter
 import threading
 
+# ---- Initialization Tkinter ---- #
 window = Tk()
+window.title('Face Recognition')
+icon = PhotoImage(file='icon/logo.png')
+window.tk.call('wm', 'iconphoto', window._w, icon)
 
+# ---- Set Up Window ---- #
 processing = False
 
 window.geometry("1080x600")
@@ -73,11 +80,13 @@ entry0_bg = canvas.create_image(
     584.0, 496.5,
     image=entry0_img)
 
-entry0 = Label(
+entry0 = Entry(
     bd=0,
     bg="#d2c6ff",
     highlightthickness=0,
-    font=('Poppins', 10))
+    font=('Poppins 11 bold'),
+    fg='#010030',
+    justify='center')
 
 entry0.bind('<Button-1>', lambda e: 'break')
 
@@ -95,7 +104,9 @@ entry1 = Entry(
     bd=0,
     bg="#86a1ff",
     highlightthickness=0,
-    font=('Poppins', 10))
+    font=('Poppins 11 bold'),
+    fg='#ffffff',
+    justify='center')
 
 entry1.bind('<Button-1>', lambda e: 'break')
 
@@ -113,7 +124,9 @@ entry2 = Entry(
     bd=0,
     bg="#86a1ff",
     highlightthickness=0,
-    font=('Poppins', 10))
+    font=('Poppins 11 bold'),
+    fg='#ffffff',
+    justify='center')
 
 entry2.bind('<Button-1>', lambda e: 'break')
 
@@ -131,7 +144,9 @@ entry3 = Entry(
     bd=0,
     bg="#d2c6ff",
     highlightthickness=0,
-    font=('Poppins', 10))
+    font=('Poppins 11 bold'),
+    fg='#010030',
+    justify='center')
 
 entry3.bind('<Button-1>', lambda e: 'break')
 
@@ -159,77 +174,72 @@ def start_thread():
     threading.Thread(target=counting).start()
 
 
+def check_entry():
+    var1 = entry1.get()
+    var2 = entry2.get()
+    if var1 == '':
+        entry1.insert(0, "No File Chosen")
+    if var2 == '':
+        entry2.insert(0, "No File Chosen")
+
+
+check_entry()
+
+
 def start():
     sum = [0 for i in range(256 * 256)]
     count = 0
     global imageRes
-    data = []
+    data = []       # data yang diproses
+    data2 = []      # data asli (untuk di display untuk hasil)
+    filesname = []  # nama-nama dari file yang dibaca
 
     start_time = time.time()
     for imgname in os.listdir(pathdataset):
-        # print(f'Processing {imgname}')
+        print(f'Processing {imgname}')
         img = cv2.imread(os.path.join(pathdataset, imgname),
                          cv2.IMREAD_GRAYSCALE)
+        img2 = cv2.imread(os.path.join(
+            pathdataset, imgname), cv2.COLOR_BGR2RGB)
+
         img = resize_256(img)
+        img2 = resize_256(img2)
+
         img = numpy.array(img.T).flatten()
+
         data += [img]
+        data2 += [img2]
+        filesname += [imgname]
+
         sum = numpy.add(sum, img)
         count += 1
 
-    rawimg = data
-    # print(f'shape rawimg {rawimg[0].shape}')
+    # rawimg untuk yang ditampilin nanti
+    rawimg = data2
     print(f'File count: {count}')
     mean = numpy.divide(sum, count)
 
     for d in data:
         d = numpy.subtract(d, mean)
 
-    print("done")
-
     # A = N^2 x M
     # A = [a1, a2, .., am], A = data
     npdata = numpy.array(data)
     # karena masih M x N^2
-    # print(npdata.shape)
     # A : N^2 x M
     npdata = npdata.transpose()
-    # print('1')
     # A : N^2 x M, At : M x N^2
     # M x M : At x A
     Cov = numpy.matmul(npdata.transpose(), npdata)
-    # print('2')
 
+    # get eig vals and eig vectors
     w, v = eigen.eigenvectors_qr(Cov)
-    # print("w")
-    # print(w)
-    # print("v")
-    # print(v.shape)
-    # print(v)
-    # print('3')
+    # w, v = numpy.linalg.eig(Cov)
 
     # Now we select k = 5 of w ( max eigenvalues )
     k = 5
-    # eigvals = numpy.array([])
-    # eigvecs = numpy.empty((0, count), dtype=type(v))
 
     eigvals, eigvecs = getKeigen(k, w, v, count)
-    # vt = v.transpose()
-    # for i in range(k):
-    #     print(i)
-    #     a = w.max()
-    #     print("max:", a)
-    #     eigvals = numpy.append(eigvals, [a])
-    #     index = numpy.where(w == a)
-    #     print("idx:", index)
-    #     w[index] = 0
-    #     vec = vt[index]
-    #     print("vec:", vec)
-    #     eigvecs = numpy.concatenate((eigvecs, vec), axis = 0)
-
-    # eigvals = lambda
-    # print("eigvals:", eigvals)
-    # eigvecs = v
-    # print("eigvecs (still transposed):", eigvecs)
 
     # ui = A.vi
     u = numpy.empty((0, 256*256), dtype=type(v))
@@ -237,20 +247,12 @@ def start():
         # ambil row vi, terus transpose, terus dikali A, hasilnya ui yang N^2 x 1 (A: N^2 x M, vi : M x 1)
         # ditranspose biar gampang masukinnya
         vi = eigvecs[i].transpose()
-        # print("vi: ")
-        # print(vi)
-        # print(vi.size)
-        # print(npdata.size)
+
         ui = numpy.matmul(npdata, vi)
         ui = ui.transpose()
-        # print("u", u)
-        # print("ui", ui)
-        # print("size ui:", ui.size)
-        u = numpy.vstack((u, ui))
-        # u = numpy.concatenate((u, ui), axis = 0)
 
-    # print("u:", u)
-    # u = u.transpose()
+        u = numpy.vstack((u, ui))
+
     AT = npdata.transpose()
 
     w = numpy.empty((0, k), dtype=type(u))
@@ -266,16 +268,10 @@ def start():
             uj = u[j]
             temp = numpy.dot(Ai, uj)
             wi = numpy.append(wi, temp)
-            # print(wi.size)
-            # print(wi)
         w = numpy.vstack((w, wi))
 
-    # print("w:", w)
-    # count x k
-    print(w.size)
     w = numpy.transpose(w)
     # k x count
-    print(w.size)
 
     inputimage = imageInput
 
@@ -302,39 +298,55 @@ def start():
         uj = ulocal[j]
         temp = numpy.dot(image, uj)
         wtest = numpy.append(wtest, temp)
-        # print(wi.size)
-        # print(wi)
 
     # wtest adalah weight dari test image jika dibandingkan dengan vektor u
     # vektor u adalah eigen vector
 
     # Cari euclidean distance terkecil dari w test dengan w data
+
     distance = numpy.linalg.norm(wtest - wdata[0])
     indexmin = 0
+
+    # get distancelist
+    distanceList = [(distance, indexmin)]
+
     for i in range(1, count):
         temp = numpy.linalg.norm(wtest - wdata[i])
+        distanceList += [(temp, i)]
         if (temp < distance):
             distance = temp
             indexmin = i
+
     # distance adalah jarak euclidean terkecil
     # indexmin adalah index dengan w di wdata terdekat dengan wtest
-    print(distance)
-    print(indexmin)
-    print(f'file count: {count}')
+    print(f'distance: {distance}')
+    print(f'indexmin: {indexmin}')
 
-    # rawimg : N^2 x M, ditranspose jadi M x N^2
-    # image closest : 1 x N^2
-    rawimage = numpy.transpose(rawimg)
+    # rawimg : 256 x 256
     imageclosest = rawimg[indexmin]
-    # ditranspose jadi N^2 x 1
-    imageclosest = imageclosest.T
 
-    # contoh hasil
-    testRes = imageclosest.reshape(-1, 256).T
-    # print(testmeanface)
-    cv2.imwrite(r"..\test\hasil\test1.jpg", testRes)
+    # Hasil
+    testRes = cv2.cvtColor(imageclosest, cv2.COLOR_BGR2RGB)
 
-    print("donedone")
+    imageRes = Image.fromarray(testRes)
+
+    imageRes = ImageTk.PhotoImage(imageRes)
+
+    canvas.create_image(
+        707, 188,
+        anchor=NW,
+        image=imageRes)
+
+    print("3 most closest:")
+    distanceList = sorted(distanceList, key=itemgetter(0))[
+        :3]    # get 3 lowest
+    for i in distanceList:
+        print(f'- {filesname[i[1]]} - {i[0]}')
+
+    print("done")
+
+    entry3.delete(0, END)
+    entry3.insert(0, filesname[indexmin])
     global processing
     processing = False
 
@@ -350,12 +362,9 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
     eigvecs = numpy.empty((0, filecount), dtype=type(eigvectors))
     vt = eigvectors.transpose()
     for i in range(k):
-        print(i)
         a = eigvalues.max()
-        print("max:", a)
         eigvals = numpy.append(eigvals, [a])
         index = numpy.where(eigvalues == a)
-        print("idx:", index)
         eigvalues[index] = 0
         vec = vt[index]
         print("vec:", vec)
@@ -368,8 +377,12 @@ def select_dataset():
     global pathdataset
     pathdataset = filedialog.askdirectory()
 
-    entry1.delete(0, END)
-    entry1.insert(0, os.path.basename(pathdataset))
+    if (len(pathdataset) != 0):
+        current = entry1.get()
+        entry1.delete(0, END)
+        entry1.insert(0, os.path.basename(pathdataset))
+    else:
+        check_entry()
 
 
 def resize_256(image):
@@ -391,11 +404,10 @@ def resize_256(image):
 
     crop_img = image[int(start_row):int(end_row), int(start_col):int(end_col)]
 
+    # dimensi yang diinginkan 256 x 256
     dim = (256, 256)
 
     resized_image = cv2.resize(crop_img, dim, interpolation=cv2.INTER_LINEAR)
-
-    # print(f'res {resized_image.shape}')
 
     return resized_image
 
@@ -416,28 +428,21 @@ def select_image():
         resized_image = resize_256(image)
         resized_grayscale = resize_256(grayscale)
 
-        # print(f'resized {resized_grayscale.shape}')
+        # yang dibandingin
         imageInput = numpy.array(resized_grayscale.T).flatten()
-
-        # print(f'grayscale {imageInput.shape}')
 
         image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
 
         image = Image.fromarray(image)
-        # grayscale = Image.fromarray(grayscale)
 
         image = ImageTk.PhotoImage(image)
-        # grayscale = ImageTk.PhotoImage(grayscale)
 
         canvas.create_image(
             382, 188,
             anchor=NW,
             image=image)
-
-        # canvas.create_image(
-        #     707, 188,
-        #     anchor=NW,
-        #     image=grayscale)
+    else:
+        check_entry()
 
 
 window.resizable(False, False)
