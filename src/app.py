@@ -1,4 +1,5 @@
 # ---- Import Libraries ---- #
+import sys
 from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import filedialog
@@ -6,9 +7,11 @@ import cv2
 import numpy
 import os
 import time
-import eigen
+from image import resize_256
 from operator import itemgetter
 import threading
+from model import Model
+import base64
 
 # ---- Initialization Tkinter ---- #
 window = Tk()
@@ -18,6 +21,8 @@ window.tk.call('wm', 'iconphoto', window._w, icon)
 
 # ---- Set Up Window ---- #
 processing = False
+
+model = Model()
 
 window.geometry("1080x600")
 window.configure(bg="#ffffff")
@@ -161,8 +166,8 @@ canvas.pack()
 def counting():
     start = time.time()
     while processing:
-        time.sleep(0.5)
         time_label.config(text=f"{(time.time() - start):.4f}s")
+        time.sleep(0.5)
 
 
 def start_thread():
@@ -187,105 +192,28 @@ check_entry()
 
 
 def start():
-    sum = [0 for i in range(256 * 256)]
-    count = 0
     global imageRes
-    data = []       # data yang diproses
-    data2 = []      # data asli (untuk di display untuk hasil)
-    filesname = []  # nama-nama dari file yang dibaca
-
     start_time = time.time()
-    for imgname in os.listdir(pathdataset):
-        print(f'Processing {imgname}')
-        img = cv2.imread(os.path.join(pathdataset, imgname),
-                         cv2.IMREAD_GRAYSCALE)
-        img2 = cv2.imread(os.path.join(
-            pathdataset, imgname), cv2.COLOR_BGR2RGB)
 
-        img = resize_256(img)
-        img2 = resize_256(img2)
+    encoded_path = base64.b64encode(
+        pathdataset.encode('ascii')).decode('ascii')
+    encoded_path = f"../test/_cache_/{encoded_path}"
+    has_cache = os.path.exists(encoded_path + '.npz')
 
-        img = numpy.array(img.T).flatten()
+    if model.path != pathdataset:
+        if has_cache:
+            model.load_cache(pathdataset, encoded_path + '.npz')
+        else:
+            model.train(pathdataset)
 
-        data += [img]
-        data2 += [img2]
-        filesname += [imgname]
-
-        sum = numpy.add(sum, img)
-        count += 1
-
-    # rawimg untuk yang ditampilin nanti
-    rawimg = data2
-    print(f'File count: {count}')
-    mean = numpy.divide(sum, count)
-
-    for d in data:
-        d = numpy.subtract(d, mean)
-
-    # A = N^2 x M
-    # A = [a1, a2, .., am], A = data
-    npdata = numpy.array(data)
-    # karena masih M x N^2
-    # A : N^2 x M
-    npdata = npdata.transpose()
-    # A : N^2 x M, At : M x N^2
-    # M x M : At x A
-    Cov = numpy.matmul(npdata.transpose(), npdata)
-
-    # get eig vals and eig vectors
-    w, v = eigen.eigenvectors_qr(Cov)
-    # w, v = numpy.linalg.eig(Cov)
-
-    # Now we select k = 5 of w ( max eigenvalues )
-    k = 5
-
-    eigvals, eigvecs = getKeigen(k, w, v, count)
-
-    # ui = A.vi
-    u = numpy.empty((0, 256*256), dtype=type(v))
-    for i in range(k):
-        # ambil row vi, terus transpose, terus dikali A, hasilnya ui yang N^2 x 1 (A: N^2 x M, vi : M x 1)
-        # ditranspose biar gampang masukinnya
-        vi = eigvecs[i].transpose()
-
-        ui = numpy.matmul(npdata, vi)
-        ui = ui.transpose()
-
-        u = numpy.vstack((u, ui))
-
-    AT = npdata.transpose()
-
-    w = numpy.empty((0, k), dtype=type(u))
-    # ui dimensinya 1 x N^2 karena ditranspose
-    # AT dimensinya M x N^2, diambil row nya jadi 1 x N^2
-    # Kaliin semua row (gambar) dengan semua row (ui) matriks u
-    # 1 gambar dikali k u, hasilnya ada k weight, vektor wi dimensinya 1 x k
-    # ada sebanyak count gambar, matriks w jadinya count x k, nanti ditranspose jadi k x count
-    for i in range(count):
-        wi = numpy.empty(0, dtype=type(u))
-        Ai = AT[i]
-        for j in range(k):
-            uj = u[j]
-            temp = numpy.dot(Ai, uj)
-            wi = numpy.append(wi, temp)
-        w = numpy.vstack((w, wi))
-
-    w = numpy.transpose(w)
-    # k x count
+    print(f"\n\nSIZE MODEL {sys.getsizeof(model)} \n\n")
 
     inputimage = imageInput
 
-    # penyocokan image
-    # test.w : k x count (data set file)
-    wdata = numpy.transpose(w)
-
-    # wdata : count x k
-
-    # u local : k x N^2
-    ulocal = u
-
     image = numpy.transpose(inputimage)
     # image : 1 x N^2
+
+    ulocal = model.u
 
     # ui dimensinya 1 x N^2 karena ditranspose
     # AT dimensinya M x N^2, diambil row nya jadi 1 x N^2
@@ -294,7 +222,7 @@ def start():
     # ada sebanyak count gambar, matriks w jadinya count x k, nanti ditranspose jadi k x count
 
     wtest = numpy.empty(0, dtype=type(ulocal))
-    for j in range(k):
+    for j in range(model.k):
         uj = ulocal[j]
         temp = numpy.dot(image, uj)
         wtest = numpy.append(wtest, temp)
@@ -303,15 +231,16 @@ def start():
     # vektor u adalah eigen vector
 
     # Cari euclidean distance terkecil dari w test dengan w data
-    distance = getMagnitude(wtest - wdata[0])
+
+    distance = numpy.linalg.norm(wtest - model.wdata[0])
     indexmin = 0
 
     # get distancelist
     distanceList = [(distance, indexmin)]
 
-    for i in range(1, count):
-        temp = getMagnitude(wtest - wdata[i])
-        print(temp)
+    for i in range(1, model.count):
+        temp = numpy.linalg.norm(wtest - model.wdata[i])
+        distanceList += [(temp, i)]
         if (temp < distance):
             distance = temp
             indexmin = i
@@ -322,7 +251,7 @@ def start():
     print(f'indexmin: {indexmin}')
 
     # rawimg : 256 x 256
-    imageclosest = rawimg[indexmin]
+    imageclosest = model.rawimg[indexmin]
 
     # Hasil
     testRes = cv2.cvtColor(imageclosest, cv2.COLOR_BGR2RGB)
@@ -340,11 +269,11 @@ def start():
     distanceList = sorted(distanceList, key=itemgetter(0))[
         :3]    # get 3 lowest
     for i in distanceList:
-        print(f'- {filesname[i[1]]} - {i[0]}')
+        print(f'- {model.filesname[i[1]]} - {i[0]}')
 
     print("done")
 
-    result_label.config(text=filesname[indexmin])
+    result_label.config(text=model.filesname[indexmin])
     global processing
     processing = False
 
@@ -353,22 +282,8 @@ def start():
 
     time_label.config(text=execution_time + "s")
 
-
-def getKeigen(k, eigvalues, eigvectors, filecount):
-    # eigvalues and eigvectors are numpy arrays
-    eigvals = numpy.array([])
-    eigvecs = numpy.empty((0, filecount), dtype=type(eigvectors))
-    vt = eigvectors.transpose()
-    for i in range(k):
-        a = eigvalues.max()
-        eigvals = numpy.append(eigvals, [a])
-        index = numpy.where(eigvalues == a)
-        eigvalues[index] = 0
-        vec = vt[index]
-        print("vec:", vec)
-        eigvecs = numpy.concatenate((eigvecs, vec), axis=0)
-
-    return eigvals, eigvecs
+    if not has_cache:
+        model.save_cache(encoded_path)
 
 def getMagnitude(array):
     squaresum = 0
@@ -377,6 +292,8 @@ def getMagnitude(array):
     return math.sqrt(squaresum)
 
 def select_dataset():
+    if processing:
+        return
     global pathdataset
     pathdataset = filedialog.askdirectory()
 
@@ -388,34 +305,10 @@ def select_dataset():
         check_entry()
 
 
-def resize_256(image):
-    width, height = image.shape[1], image.shape[0]
-
-    if (width > height):
-        start_row = 0
-        end_row = height
-
-        start_col = (width - height) / 2
-        end_col = width - start_col
-    else:
-        max = width
-        start_row = (height - width) / 2
-        end_row = height - start_row
-
-        start_col = 0
-        end_col = width
-
-    crop_img = image[int(start_row):int(end_row), int(start_col):int(end_col)]
-
-    # dimensi yang diinginkan 256 x 256
-    dim = (256, 256)
-
-    resized_image = cv2.resize(crop_img, dim, interpolation=cv2.INTER_LINEAR)
-
-    return resized_image
-
-
 def select_image():
+    if processing:
+        return
+
     global image, imageInput
 
     path = filedialog.askopenfilename()
