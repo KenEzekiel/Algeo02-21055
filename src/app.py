@@ -214,7 +214,7 @@ capturing_video = False
 video_thread = None
 
 pathdataset = None
-inputImage = None
+imageInput = None
 
 canvas.pack()
 
@@ -230,7 +230,7 @@ def start_thread():
     global processing
     if processing:
         return
-    if not pathdataset or not inputImage:
+    if not pathdataset or not imageInput:
         messagebox.showerror("Error", "Please select dataset and image")
         return
     processing = True
@@ -356,8 +356,8 @@ def stop_video():
     video_capture.stop()
     b3.config(command=lambda: threading.Thread(
         target=start_video, daemon=True).start(), image=img3)
-    global inputImage
-    inputImage = None
+    global imageInput
+    imageInput = None
     update_status("")
     result_label.config(text="")
 
