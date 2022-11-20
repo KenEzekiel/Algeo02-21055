@@ -55,9 +55,3 @@ for i in range(1, test.count):
 # indexmin adalah index dengan w di wdata terdekat dengan wtest
 print(distance)
 print(indexmin)
-
-# rawimg : N^2 x M, ditranspose jadi M x N^2
-# image closest : 1 x N^2
-imageclosest = test.rawimg.transpose()[indexmin]
-# ditranspose jadi N^2 x 1
-imageclosest = imageclosest.transpose()
