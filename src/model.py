@@ -112,7 +112,7 @@ class Model:
             index = numpy.where(eigvalues == a)
             eigvalues[index] = 0
             vec = vt[index]
-            print("vec:", vec)
+            # print("vec:", vec)
             eigvecs = numpy.concatenate((eigvecs, vec), axis=0)
 
         return eigvals, eigvecs
