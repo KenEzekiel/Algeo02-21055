@@ -23,6 +23,9 @@ def resize_256(image):
     # dimensi yang diinginkan 256 x 256
     dim = (256, 256)
 
-    resized_image = cv2.resize(crop_img, dim, interpolation=cv2.INTER_LINEAR)
+    if (crop_img.shape[0] < 256):   # enlarging
+        resized_image = cv2.resize(crop_img, dim, interpolation=cv2.INTER_CUBIC)
+    else:                           # shrinking
+        resized_image = cv2.resize(crop_img, dim, interpolation=cv2.INTER_AREA)
 
     return resized_image
