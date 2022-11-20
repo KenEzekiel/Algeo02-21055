@@ -39,7 +39,7 @@ canvas = Canvas(
     relief="ridge")
 canvas.place(x=0, y=0)
 
-background_img = PhotoImage(file=f"background/background.png")
+background_img = PhotoImage(file=f"background/background2.png")
 background = canvas.create_image(
     540.0, 300.0,
     image=background_img)
@@ -82,6 +82,19 @@ b2.place(
     x=75, y=463,
     width=160,
     height=50)
+
+img3 = PhotoImage(file = f"buttons/img3.png")
+b3 = Button(
+    image = img3,
+    borderwidth = 0,
+    highlightthickness = 0,
+    # command = ,
+    relief = "flat")
+
+b3.place(
+    x = 73, y = 522,
+    width = 162,
+    height = 52)
 
 time_label_img = PhotoImage(file=f"textbox/img_textBox0.png")
 time_label_bg = canvas.create_image(
@@ -142,6 +155,26 @@ entry2.place(
     x=90.0, y=412,
     width=130.0,
     height=24)
+
+status_label_img = PhotoImage(file = f"textbox/img_textBox4.png")
+status_label_bg = canvas.create_image(
+    584.0, 547.5,
+    image = status_label_img)
+
+status_label = Label(
+    bd = 0,
+    bg = "#d2c6ff",
+    highlightthickness = 0,
+    font=('Poppins 11 bold'),
+    fg='#010030',
+    justify='center')
+
+status_label.bind('<Button-1>', lambda e: 'break')
+
+status_label.place(
+    x = 545.5, y = 530,
+    width = 77.0,
+    height = 33)
 
 result_label_img = PhotoImage(file=f"textbox/img_textBox3.png")
 result_label_bg = canvas.create_image(
