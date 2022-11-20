@@ -13,12 +13,15 @@ class VideoCapture:
         self.width = self.video.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.video.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-    def __del__(self) -> None:
-        if self.video.isOpened():
+    def stop(self) -> None:
+        if self.video is not None and self.video.isOpened():
             self.video.release()
+        self.video = None
 
     def get_image(self):
-        success, img = self.video.read()
-        if success:
-            return (success, cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        return (success, None)
+        if self.video is not None and self.video.isOpened():
+            success, img = self.video.read()
+            if success:
+                return (success, cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            return (success, None)
+        return (False, None)
