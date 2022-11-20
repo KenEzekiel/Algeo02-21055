@@ -13,12 +13,14 @@ import threading
 from model import Model
 import base64
 import math
+from video import VideoCapture
 
 # ---- Initialization Tkinter ---- #
 window = Tk()
 window.title('Face Recognition')
 icon = PhotoImage(file='icon/logo.png')
 window.tk.call('wm', 'iconphoto', window._w, icon)
+video_capture = VideoCapture()
 
 # ---- Set Up Window ---- #
 processing = False
@@ -161,6 +163,16 @@ result_label.place(
     width=148.0,
     height=33)
 
+left_img_label = Label()
+left_img_label.place(
+    x=382, y=188,
+    anchor=NW, width=256, height=256
+)
+
+left_img_bg = PhotoImage(file="background/image_bg.png")
+left_img_label.config(image=left_img_bg)
+left_img_label.image = left_img_bg
+
 canvas.pack()
 
 
@@ -286,11 +298,34 @@ def start():
     if not has_cache:
         model.save_cache(encoded_path)
 
+
+def start_video():
+    global video_capture, image, imageInput
+    video_capture.start()
+    last = time.time()
+    while True:
+        ret, frame = video_capture.get_image()
+        if not ret:
+            break
+        resized_image = resize_256(frame)
+        frame = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
+
+        frame = Image.fromarray(frame)
+
+        image = ImageTk.PhotoImage(frame)
+
+        left_img_label.configure(image=image)
+        left_img_label.image = image
+
+    del video_capture
+
+
 def getMagnitude(array):
     squaresum = 0
     for a in array:
         squaresum += a**2
     return math.sqrt(squaresum)
+
 
 def select_dataset():
     if processing:
