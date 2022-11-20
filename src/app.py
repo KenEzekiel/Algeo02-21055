@@ -75,12 +75,12 @@ b2.place(
     width=160,
     height=50)
 
-entry0_img = PhotoImage(file=f"textbox/img_textBox0.png")
-entry0_bg = canvas.create_image(
+time_label_img = PhotoImage(file=f"textbox/img_textBox0.png")
+time_label_bg = canvas.create_image(
     584.0, 496.5,
-    image=entry0_img)
+    image=time_label_img)
 
-entry0 = Label(
+time_label = Label(
     bd=0,
     bg="#d2c6ff",
     highlightthickness=0,
@@ -88,9 +88,9 @@ entry0 = Label(
     fg='#010030',
     justify='center')
 
-entry0.bind('<Button-1>', lambda e: 'break')
+time_label.bind('<Button-1>', lambda e: 'break')
 
-entry0.place(
+time_label.place(
     x=545.5, y=479,
     width=77.0,
     height=33)
@@ -135,12 +135,12 @@ entry2.place(
     width=130.0,
     height=24)
 
-entry3_img = PhotoImage(file=f"textbox/img_textBox3.png")
-entry3_bg = canvas.create_image(
+result_label_img = PhotoImage(file=f"textbox/img_textBox3.png")
+result_label_bg = canvas.create_image(
     873.5, 495.5,
-    image=entry3_img)
+    image=result_label_img)
 
-entry3 = Entry(
+result_label = Label(
     bd=0,
     bg="#d2c6ff",
     highlightthickness=0,
@@ -148,9 +148,9 @@ entry3 = Entry(
     fg='#010030',
     justify='center')
 
-entry3.bind('<Button-1>', lambda e: 'break')
+result_label.bind('<Button-1>', lambda e: 'break')
 
-entry3.place(
+result_label.place(
     x=799.5, y=478,
     width=148.0,
     height=33)
@@ -162,7 +162,7 @@ def counting():
     start = time.time()
     while processing:
         time.sleep(0.5)
-        entry0.config(text=f"{(time.time() - start):.4f}s")
+        time_label.config(text=f"{(time.time() - start):.4f}s")
 
 
 def start_thread():
@@ -345,15 +345,14 @@ def start():
 
     print("done")
 
-    entry3.delete(0, END)
-    entry3.insert(0, filesname[indexmin])
+    result_label.config(text=filesname[indexmin])
     global processing
     processing = False
 
     current_time = time.time()
     execution_time = '{:.4f}'.format(current_time - start_time)
 
-    entry0.config(text=execution_time + "s")
+    time_label.config(text=execution_time + "s")
 
 
 def getKeigen(k, eigvalues, eigvectors, filecount):
