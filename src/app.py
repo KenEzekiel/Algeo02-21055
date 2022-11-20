@@ -80,7 +80,7 @@ entry0_bg = canvas.create_image(
     584.0, 496.5,
     image=entry0_img)
 
-entry0 = Entry(
+entry0 = Label(
     bd=0,
     bg="#d2c6ff",
     highlightthickness=0,
@@ -367,7 +367,7 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
         index = numpy.where(eigvalues == a)
         eigvalues[index] = 0
         vec = vt[index]
-        print("vec:", vec)
+        # print("vec:", vec)
         eigvecs = numpy.concatenate((eigvecs, vec), axis=0)
 
     return eigvals, eigvecs
