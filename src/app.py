@@ -12,6 +12,7 @@ from operator import itemgetter
 import threading
 from model import Model
 import base64
+import math
 
 # ---- Initialization Tkinter ---- #
 window = Tk()
@@ -232,14 +233,14 @@ def start():
 
     # Cari euclidean distance terkecil dari w test dengan w data
 
-    distance = numpy.linalg.norm(wtest - model.wdata[0])
+    distance = getMagnitude(wtest - model.wdata[0])
     indexmin = 0
 
     # get distancelist
     distanceList = [(distance, indexmin)]
 
     for i in range(1, model.count):
-        temp = numpy.linalg.norm(wtest - model.wdata[i])
+        temp = getMagnitude(wtest - model.wdata[i])
         distanceList += [(temp, i)]
         if (temp < distance):
             distance = temp
