@@ -1,7 +1,10 @@
 import numpy
+import math
 
-def getKeigen(vt, k, eigvalues, eigvectors):
+def getKeigen(k, eigvalues, eigvectors, filecount):
     # eigvalues and eigvectors are numpy arrays
+    eigvals = numpy.array([])
+    eigvecs = numpy.empty((0, filecount), dtype=type(eigvectors))
     vt = eigvectors.transpose()
     for i in range(k):
         print(i)
@@ -16,3 +19,9 @@ def getKeigen(vt, k, eigvalues, eigvectors):
         eigvecs = numpy.concatenate((eigvecs, vec), axis = 0)
     
     return eigvals, eigvecs
+
+def getMagnitude(array):
+    squaresum = 0
+    for a in array:
+        squaresum += a**2
+    return math.sqrt(squaresum)

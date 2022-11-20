@@ -1,5 +1,13 @@
 import numpy as np
 import test
+import math
+
+def getMagnitude(array):
+    squaresum = 0
+    for a in array:
+        squaresum += a**2
+    return math.sqrt(squaresum)
+
 
 # input image
 
@@ -36,10 +44,10 @@ for j in range(test.k):
 # vektor u adalah eigen vector
 
 # Cari euclidean distance terkecil dari w test dengan w data
-distance = np.linalg.norm(wtest - wdata[0])
+distance = getMagnitude(wtest - wdata[0])
 indexmin = 0
 for i in range(1, test.count):
-    temp = np.linalg.norm(wtest - wdata[i])
+    temp = getMagnitude(wtest - wdata[i])
     if (temp < distance):
         distance = temp
         indexmin = i

@@ -289,10 +289,10 @@ def start():
     # vektor u adalah eigen vector
 
     # Cari euclidean distance terkecil dari w test dengan w data
-    distance = numpy.linalg.norm(wtest - wdata[0])
+    distance = getMagnitude(wtest - wdata[0])
     indexmin = 0
     for i in range(1, count):
-        temp = numpy.linalg.norm(wtest - wdata[i])
+        temp = getMagnitude(wtest - wdata[i])
         print(temp)
         if (temp < distance):
             distance = temp
@@ -342,6 +342,12 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
         eigvecs = numpy.concatenate((eigvecs, vec), axis = 0)
     
     return eigvals, eigvecs
+
+def getMagnitude(array):
+    squaresum = 0
+    for a in array:
+        squaresum += a**2
+    return math.sqrt(squaresum)
 
 def select_dataset():
     global pathdataset
