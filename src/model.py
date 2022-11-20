@@ -118,6 +118,8 @@ class Model:
         return eigvals, eigvecs
 
     def save_cache(self, path: str) -> None:
+        if not os.path.isdir('../test/_cache_'):
+            os.mkdir('../test/_cache_')
         # save data
         numpy.savez(path, u=self.u, wdata=self.wdata, rawimg=self.rawimg,
                     filesname=self.filesname, count=self.count)

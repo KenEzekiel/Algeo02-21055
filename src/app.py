@@ -228,9 +228,9 @@ def counting():
 
 def start_thread():
     global processing
-    if processing:
+    if processing or capturing_video:
         return
-    if not pathdataset or not imageInput:
+    if pathdataset is None or imageInput is None:
         messagebox.showerror("Error", "Please select dataset and image")
         return
     processing = True
@@ -363,7 +363,7 @@ def stop_video():
 
 
 def start_video():
-    if not pathdataset:
+    if pathdataset is None:
         messagebox.showerror("Error", "Please choose dataset first")
         return
     entry2.delete(0, END)
@@ -414,7 +414,7 @@ def getMagnitude(array):
 
 
 def select_dataset():
-    if processing:
+    if processing or capturing_video:
         return
     global pathdataset
     pathdataset = filedialog.askdirectory()
@@ -428,7 +428,7 @@ def select_dataset():
 
 
 def select_image():
-    if processing:
+    if processing or capturing_video:
         return
 
     global image, imageInput
