@@ -22,7 +22,7 @@ Eigenface adalah teknik yang menggunakan matriks dari wajah-wajah, yang akan dih
 .
 │ 
 ├── doc
-│   └─── Algeo02-21055.pdf
+│   └── Algeo02-21055.pdf
 │ 
 ├── src
 │   ├── _pycache_
