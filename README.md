@@ -60,7 +60,7 @@ Eigenface adalah teknik yang menggunakan matriks dari wajah-wajah, yang akan dih
 │   ├── dataset
 │   └── pencocokan.py
 │
-└──README.md  
+└── README.md  
 ```
 
 ## Technologies Used
