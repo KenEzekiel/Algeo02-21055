@@ -37,3 +37,7 @@ Eigenface adalah teknik yang menggunakan matriks dari wajah-wajah, yang akan dih
 2. Video face recognition
 
 ## Screenshots
+![alt text](https://github.com/KenEzekiel/Algeo02-21055/blob/main/test/ss.jpg?raw=true)
+
+## Project Status
+Project is: complete
