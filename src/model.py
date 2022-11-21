@@ -112,12 +112,14 @@ class Model:
             index = numpy.where(eigvalues == a)
             eigvalues[index] = 0
             vec = vt[index]
-            print("vec:", vec)
+            # print("vec:", vec)
             eigvecs = numpy.concatenate((eigvecs, vec), axis=0)
 
         return eigvals, eigvecs
 
     def save_cache(self, path: str) -> None:
+        if not os.path.isdir('../test/_cache_'):
+            os.mkdir('../test/_cache_')
         # save data
         numpy.savez(path, u=self.u, wdata=self.wdata, rawimg=self.rawimg,
                     filesname=self.filesname, count=self.count)

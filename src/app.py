@@ -1,6 +1,7 @@
 # ---- Import Libraries ---- #
 import sys
 from tkinter import *
+from tkinter import messagebox
 from PIL import ImageTk, Image
 from tkinter import filedialog
 import cv2
@@ -13,12 +14,15 @@ import threading
 from model import Model
 import base64
 import math
+from video import VideoCapture
+import sys
 
 # ---- Initialization Tkinter ---- #
 window = Tk()
 window.title('Face Recognition')
 icon = PhotoImage(file='icon/logo.png')
 window.tk.call('wm', 'iconphoto', window._w, icon)
+video_capture = VideoCapture()
 
 # ---- Set Up Window ---- #
 processing = False
@@ -37,7 +41,7 @@ canvas = Canvas(
     relief="ridge")
 canvas.place(x=0, y=0)
 
-background_img = PhotoImage(file=f"background/background.png")
+background_img = PhotoImage(file=f"background/background2.png")
 background = canvas.create_image(
     540.0, 300.0,
     image=background_img)
@@ -80,6 +84,20 @@ b2.place(
     x=75, y=463,
     width=160,
     height=50)
+
+img3 = PhotoImage(file=f"buttons/img3.png")
+img4 = PhotoImage(file=f"buttons/img4.png")
+b3 = Button(
+    image=img3,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: threading.Thread(target=start_video, daemon=True).start(),
+    relief="flat")
+
+b3.place(
+    x=73, y=522,
+    width=162,
+    height=52)
 
 time_label_img = PhotoImage(file=f"textbox/img_textBox0.png")
 time_label_bg = canvas.create_image(
@@ -141,6 +159,26 @@ entry2.place(
     width=130.0,
     height=24)
 
+status_label_img = PhotoImage(file=f"textbox/img_textBox4.png")
+status_label_bg = canvas.create_image(
+    584.0, 547.5,
+    image=status_label_img)
+
+status_label = Label(
+    bd=0,
+    bg="#d2c6ff",
+    highlightthickness=0,
+    font=('Poppins 11 bold'),
+    fg='#010030',
+    justify='center')
+
+status_label.bind('<Button-1>', lambda e: 'break')
+
+status_label.place(
+    x=545.5, y=530,
+    width=77.0,
+    height=33)
+
 result_label_img = PhotoImage(file=f"textbox/img_textBox3.png")
 result_label_bg = canvas.create_image(
     873.5, 495.5,
@@ -161,6 +199,23 @@ result_label.place(
     width=148.0,
     height=33)
 
+left_img_label = Label()
+left_img_label.place(
+    x=382, y=188,
+    anchor=NW, width=256, height=256
+)
+
+
+left_img_bg = PhotoImage(file="background/image_bg.png")
+left_img_label.config(image=left_img_bg)
+left_img_label.image = left_img_bg
+
+capturing_video = False
+video_thread = None
+
+pathdataset = None
+imageInput = None
+
 canvas.pack()
 
 
@@ -173,11 +228,14 @@ def counting():
 
 def start_thread():
     global processing
-    if processing:
+    if processing or capturing_video:
+        return
+    if pathdataset is None or imageInput is None:
+        messagebox.showerror("Error", "Please select dataset and image")
         return
     processing = True
-    threading.Thread(target=start).start()
-    threading.Thread(target=counting).start()
+    threading.Thread(target=start, daemon=True).start()
+    threading.Thread(target=counting, daemon=True).start()
 
 
 def check_entry():
@@ -205,7 +263,9 @@ def start():
         if has_cache:
             model.load_cache(pathdataset, encoded_path + '.npz')
         else:
+            update_status("Training")
             model.train(pathdataset)
+    update_status("Processing")
 
     print(f"\n\nSIZE MODEL {sys.getsizeof(model)} \n\n")
 
@@ -282,9 +342,69 @@ def start():
     execution_time = '{:.4f}'.format(current_time - start_time)
 
     time_label.config(text=execution_time + "s")
+    update_status("Done")
 
     if not has_cache:
         model.save_cache(encoded_path)
+
+
+def stop_video():
+    global capturing_video
+    capturing_video = False
+    left_img_label.config(image=left_img_bg)
+    left_img_label.image = left_img_bg
+    video_capture.stop()
+    b3.config(command=lambda: threading.Thread(
+        target=start_video, daemon=True).start(), image=img3)
+    global imageInput
+    imageInput = None
+    update_status("")
+    result_label.config(text="")
+
+
+def start_video():
+    if pathdataset is None:
+        messagebox.showerror("Error", "Please choose dataset first")
+        return
+    entry2.delete(0, END)
+    check_entry()
+    global video_capture, image, imageInput, capturing_video, processing
+    b3.config(command=stop_video, image=img4)
+    update_status("Opening")
+    video_capture.start()
+    update_status("Capturing")
+    capturing_video = True
+    start_time = time.time()
+
+    while capturing_video:
+        ret, frame = video_capture.get_image()
+        if not ret:
+            break
+        resized_image = resize_256(frame)
+        countdown = math.ceil(5 - (time.time() - start_time))
+        if countdown:
+            cv2.putText(resized_image, str(countdown),
+                        (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2)
+        else:
+
+            resized_grayscale = cv2.cvtColor(resized_image, cv2.COLOR_RGB2GRAY)
+
+            # yang dibandingin
+            imageInput = numpy.array(resized_grayscale.T).flatten()
+
+        frame = Image.fromarray(resized_image)
+        image = ImageTk.PhotoImage(frame)
+        left_img_label.configure(image=image)
+        left_img_label.image = image
+        if not countdown:
+            processing = True
+            threading.Thread(target=counting, daemon=True).start()
+            start()
+            time.sleep(5)
+            start_time = time.time()
+
+    video_capture.stop()
+
 
 def getMagnitude(array):
     squaresum = 0
@@ -292,8 +412,9 @@ def getMagnitude(array):
         squaresum += a**2
     return math.sqrt(squaresum)
 
+
 def select_dataset():
-    if processing:
+    if processing or capturing_video:
         return
     global pathdataset
     pathdataset = filedialog.askdirectory()
@@ -307,7 +428,7 @@ def select_dataset():
 
 
 def select_image():
-    if processing:
+    if processing or capturing_video:
         return
 
     global image, imageInput
@@ -334,13 +455,23 @@ def select_image():
 
         image = ImageTk.PhotoImage(image)
 
-        canvas.create_image(
-            382, 188,
-            anchor=NW,
-            image=image)
+        left_img_label.configure(image=image)
+        left_img_label.image = image
     else:
         check_entry()
 
 
+def update_status(status):
+    status_label.config(text=status)
+
+
+def on_window_close():
+    global capturing_video
+    capturing_video = False
+    window.destroy()
+    sys.exit()
+
+
 window.resizable(False, False)
+window.protocol("WM_DELETE_WINDOW", on_window_close)
 window.mainloop()

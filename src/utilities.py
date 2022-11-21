@@ -7,15 +7,15 @@ def getKeigen(k, eigvalues, eigvectors, filecount):
     eigvecs = numpy.empty((0, filecount), dtype=type(eigvectors))
     vt = eigvectors.transpose()
     for i in range(k):
-        print(i)
+        # print(i)
         a = eigvalues.max()
-        print("max:", a)
+        # print("max:", a)
         eigvals = numpy.append(eigvals, [a])
         index = numpy.where(eigvalues == a)
-        print("idx:", index)
+        # print("idx:", index)
         eigvalues[index] = 0
         vec = vt[index]
-        print("vec:", vec)
+        # print("vec:", vec)
         eigvecs = numpy.concatenate((eigvecs, vec), axis = 0)
     
     return eigvals, eigvecs

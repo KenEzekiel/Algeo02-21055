@@ -11,10 +11,33 @@ Eigenface adalah teknik yang menggunakan matriks dari wajah-wajah, yang akan dih
 
 ## Anggota Kelompok
 
-| NIM      | Nama                         | Tanggung Jawab                        |
-| -------- | ---------------------------- | ------------------------------------- |
-| 13521055 | Muhammad Bangkit Dwi Cahyono | GUI, Pemrosesan wajah menjadi matriks |
-| 13521089 | Kenneth Ezekiel Suprantoni   | Algoritma Eigenvector                 |
-| 13521101 | Arsa Izdihar Islam           | Algoritma Eigenvalue                  |
+| NIM      | Nama                         | Tanggung Jawab                                                       |
+| -------- | ---------------------------- | -------------------------------------------------------------------- |
+| 13521055 | Muhammad Bangkit Dwi Cahyono | GUI, Pemrosesan wajah menjadi matriks, resize                        |
+| 13521089 | Kenneth Ezekiel Suprantoni   | Algoritma Pencocokan Utama dengan PCA dan Eigenface                  |
+| 13521101 | Arsa Izdihar Islam           | Algoritma Eigenvalue & Eigenvector, implementasi pada video          |
 
 ## Struktur Program
+
+
+## Technologies Used
+1. tkinter
+2. numpy
+3. cv2
+4. PIL
+5. threading
+
+## How To Use
+1. Please make sure you've installed tkinter and all the above technologies that we use
+2. In `src/` folder type `python app.py`
+3. Begin to use our app, select your own dataset and your own test-image
+
+## Features
+1. Image face recognition
+2. Video face recognition
+
+## Screenshots
+![alt text](https://github.com/KenEzekiel/Algeo02-21055/blob/main/test/ss.jpg?raw=true)
+
+## Project Status
+Project is: complete
