@@ -11,10 +11,10 @@ Eigenface adalah teknik yang menggunakan matriks dari wajah-wajah, yang akan dih
 
 ## Anggota Kelompok
 
-| NIM      | Nama                         | Tanggung Jawab                        |
-| -------- | ---------------------------- | ------------------------------------- |
-| 13521055 | Muhammad Bangkit Dwi Cahyono | GUI, Pemrosesan wajah menjadi matriks |
-| 13521089 | Kenneth Ezekiel Suprantoni   | Algoritma Eigenvector                 |
-| 13521101 | Arsa Izdihar Islam           | Algoritma Eigenvalue                  |
+| NIM      | Nama                         | Tanggung Jawab                                                       |
+| -------- | ---------------------------- | -------------------------------------------------------------------- |
+| 13521055 | Muhammad Bangkit Dwi Cahyono | GUI, Pemrosesan wajah menjadi matriks                                |
+| 13521089 | Kenneth Ezekiel Suprantoni   | Algoritma Pencocokan Utama dengan PCA dan Eigenface                  |
+| 13521101 | Arsa Izdihar Islam           | Algoritma Eigenvalue & Eigenvector                                   |
 
 ## Struktur Program
